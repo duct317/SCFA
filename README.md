@@ -22,7 +22,7 @@ The docker contains the environment and scripts to run an example can be found i
 - Inside this container, the Example.Rmd is used to run an example analysis on GBM dataset.
 - If encountering error while running the docker on MacOS or Windows, please increase the memory limit for the docker to 8-16GB. The default setting of 2GB is too low for any analysis to perform well.
 
-# How to use package for new data 
+# How to use the package for new data 
 The package includes these functions:
 - SCFA: main function, generating subtyping result. The input is a list of data matrices. In each matrix, rows represent samples and columns represent genes/features.
 - SCFA.class: predicting risk scores of test data. The inputs consist of list of train data matrices, train data label and list of test data matrices. 
