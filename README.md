@@ -10,3 +10,21 @@ Subtyping via Consensus Factor Analysis (SCFA) can efficiently remove noisy sign
 - For more information about installation of keras, please visit https://keras.rstudio.com/
 # Example 
 The docker contains the environment and scripts to run an example can be found in the Drive folder at https://tinyurl.com/scfaR.
+# How to use the docker:
+- Go to directory of the docker image
+- Using gunzip to extract the tar file: gunzip scfa_Docker.tar.gz
+- Load image to docker: docker load -i scfa_Docker.tar
+- Start a container using this image: docker run -e PASSWORD=<your-password> -d --name scfa_test -p <port>:8787 scfa
+	- <your-password> is custom password to log in the docker, for example 123456. <port> is an available port of the host, for example, 1234. 
+	- The command for above example: docker run -e PASSWORD=123456 -d --name scfa_test -p 1234:8787 scfa
+	- This command will create a container with rstudio server, this session can be accessed from: <ip-of-host>:1234, in case of personal computer: localhost:1234
+- The user name for Rstudio is rstudio, password is the password set above.
+- Inside this container, the Example.Rmd is used to run an example analysis on GBM dataset.
+- If encountering error while running the docker on MacOS or Windows, please increase the memory limit for the docker to 8-16GB. The default setting of 2GB is too low for any analysis to perform well.
+
+# How to use package for new data 
+The package includes these functions:
+- SCFA: main function, generating subtyping result. The input is a list of data matrices. In each matrix, rows represent samples and columns represent genes/features.
+- SCFA.class: predicting risk scores of test data. The inputs consist of list of train data matrices, train data label and list of test data matrices. 
+- The result is reproducible by setting seed for these functions.
+- More detail about parameters for each function could be found in the manual.
