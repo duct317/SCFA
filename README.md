@@ -8,7 +8,7 @@ Subtyping via Consensus Factor Analysis (SCFA) can efficiently remove noisy sign
 - Install tensorflow and keras in python using: `keras::install_keras(tensorflow = "1.13.1")`
 - For more information about installation of keras, please visit https://keras.rstudio.com/
 # Example 
-The docker contains the environment and scripts to run an example can be found in the Drive folder at https://tinyurl.com/scfaR.
+The docker contains the environment and scripts to run an example can be found in the Drive folder at http://scfa.tinnguyen-lab.com.
 # How to use the docker:
 - Go to directory of the docker image
 - Using gunzip to extract the tar file: gunzip scfa_Docker.tar.gz
