@@ -51,7 +51,7 @@ SCFA <- function(dataList, k = NULL, max.k = 5, ncores = 10L, seed = NULL)
   tmp1 <- list()
   tmp1$all <- all_clus
   cluster <- clustercom2(tmp1)
-  return(cluster = cluster
+  return(as.numeric(cluster)
          )
 }
 
