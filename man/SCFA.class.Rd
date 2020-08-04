@@ -4,7 +4,8 @@
 \alias{SCFA.class}
 \title{SCFA.class}
 \usage{
-SCFA.class(dataListTrain, trainLabel, dataListTest, ncores = 10L, seed = NULL)
+SCFA.class(dataListTrain, trainLabel, dataListTest, ncores = 10L,
+  seed = NULL)
 }
 \arguments{
 \item{dataListTrain}{List of training data matrices. In each matrix, rows represent samples and columns represent genes/features.}

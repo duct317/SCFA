@@ -9,5 +9,5 @@ License: LGPL
 Encoding: UTF-8
 LazyData: true
 Depends: R (>= 3.4)
-Imports: matrixStats, foreach, keras, tensorflow, doParallel, igraph, Matrix, caret, clues, cluster, clusterCrit, psych, glmnet
+Imports: matrixStats, foreach, keras (<= 2.2.4.1), tensorflow (<= 2.2.0), doParallel, igraph, Matrix, cluster, clusterCrit, psych, glmnet
 RoxygenNote: 7.1.0
