@@ -4,6 +4,7 @@
 #' @importFrom stats predict rnorm quantile
 #' @importFrom foreach %dopar% foreach
 #' @importFrom psych fa
+#' @importFrom RhpcBLASctl blas_set_num_threads
 #' @title SCFA
 #' @description The main function to perform subtyping
 #' @param dataList List of data matrices. In each matrix, rows represent samples and columns represent genes/features.
@@ -159,6 +160,7 @@ SCFA.basic <- function(data = data, k = NULL, max.k = 5, ncores = 10L, gen.fil =
   doParallel::registerDoParallel(cl, cores = min(10, ncores))
   parallel::clusterEvalQ(cl,{
     library(SCFA)
+    RhpcBLASctl::blas_set_num_threads(1)
   })
   latent <- foreach(counter = 1:length(re)) %dopar% {
     set.seed(counter)
@@ -175,6 +177,7 @@ SCFA.basic <- function(data = data, k = NULL, max.k = 5, ncores = 10L, gen.fil =
   doParallel::registerDoParallel(cl, cores = min(length(latent), ncores))
   parallel::clusterEvalQ(cl,{
     library(SCFA)
+    RhpcBLASctl::blas_set_num_threads(1)
   })
   result$all <- foreach(x = latent) %dopar% {
     set.seed(seed)
@@ -378,6 +381,7 @@ SCFA.basic.class <- function(data = data, ncores = 10L, gen.fil = T, seed = NULL
   doParallel::registerDoParallel(cl, cores = min(10, ncores))
   parallel::clusterEvalQ(cl,{
     library(SCFA)
+    RhpcBLASctl::blas_set_num_threads(1)
   })
   latent <- foreach(counter = 1:length(re)) %dopar% {
     set.seed(counter)
