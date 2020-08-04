@@ -3,8 +3,8 @@ Subtyping via Consensus Factor Analysis (SCFA) can efficiently remove noisy sign
 # How to install
 - The package can be installed from this repository.
 - Install devtools: `utils::install.packages('devtools')`
-- Install the package using: `devtools::install_github('duct317/SCFA')`
 - Install keras package version 2.2.4.1 using: `devtools::install_version('keras', version = '2.2.4.1', repos = 'https://cran.rstudio.com/')`
+- Install the package using: `devtools::install_github('duct317/SCFA')`
 - Install tensorflow and keras in python using: `keras::install_keras(tensorflow = "1.13.1")`
 - For more information about installation of keras, please visit https://keras.rstudio.com/
 # Example 
