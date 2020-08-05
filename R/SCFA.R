@@ -406,3 +406,15 @@ SCFA.basic.class <- function(data = data, ncores = 10L, gen.fil = TRUE, seed = N
 
     list(all.latent = latent, filter = or.da)
 }
+
+#' @title GBM
+#'
+#' @description GBM dataset, including microRNA and survidal data.
+#'
+#' @format A list with two items:
+#' \describe{
+#'   \item{data}{List of microRNA data matrix.}
+#'   \item{survival}{Survival information.}
+#' }
+"GBM"
+

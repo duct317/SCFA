@@ -42,7 +42,7 @@ coxP <- round(summary(coxFit)$sctest[3],digits = 20)
 print(coxP)
 ```
 
-```{r, eval=TRUE}
+```{r, eval=FALSE}
 #Split data to train and test
 set.seed(1)
 idx <- sample.int(nrow(dataList[[1]]), round(nrow(dataList[[1]])/2) )
