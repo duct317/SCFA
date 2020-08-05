@@ -23,3 +23,19 @@ A numeric vector containing cluster assignment for each sample.
 \description{
 The main function to perform subtyping
 }
+\examples{
+#Load example data (GBM dataset)
+data("GBM")
+#List of one matrix (microRNA data)
+dataList <- GBM$data
+#Survival information
+survival <- GBM$survival
+library(survival)
+#Generating subtyping result
+set.seed(1)
+subtype <- SCFA(dataList, seed = 1)
+#Perform survival analysis on the result
+coxFit <- coxph(Surv(time = Survival, event = Death) ~ as.factor(subtype), data = survival, ties="exact")
+coxP <- round(summary(coxFit)$sctest[3],digits = 20)
+print(coxP)
+}

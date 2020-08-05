@@ -24,3 +24,25 @@ A vector of risk score predictions for patient in test set.
 \description{
 This function provides low dimensional representations for risk prediction.
 }
+\examples{
+#Load example data (GBM dataset)
+data("GBM")
+#List of one matrix (microRNA data)
+dataList <- GBM$data
+#Survival information
+survival <- GBM$survival
+library(survival)
+#Split data to train and test
+set.seed(1)
+idx <- sample.int(nrow(dataList[[1]]), round(nrow(dataList[[1]])/2) )
+survival$Survival <- survival$Survival - min(survival$Survival) + 1 # Survival time must be positive
+trainList <- lapply(dataList, function(x) x[idx, ] )
+trainSurvival <- Surv(time = survival[idx,]$Survival, event =  survival[idx,]$Death)
+testList <- lapply(dataList, function(x) x[-idx, ] )
+testSurvival <- Surv(time = survival[-idx,]$Survival, event =  survival[-idx,]$Death)
+#Perform risk prediction
+result <- SCFA.class(trainList, trainSurvival, testList, seed = 1)
+#Validation using concordance index
+c.index <- concordance(coxph(testSurvival ~ result))$concordance
+print(c.index)
+}

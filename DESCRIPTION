@@ -8,6 +8,11 @@ Description: SCFA provides a fast and accurate platform for cancer subtyping and
 License: LGPL
 Encoding: UTF-8
 LazyData: true
-Depends: R (>= 3.4)
-Imports: matrixStats, foreach, keras (<= 2.2.4.1), tensorflow (<= 2.2.0), doParallel, igraph, Matrix, cluster, clusterCrit, psych, glmnet, RhpcBLASctl
+Depends: R (>= 3.6)
+Imports: matrixStats, foreach, keras (<= 2.2.4.1), tensorflow (<= 2.2.0), doParallel, 
+  igraph, Matrix, cluster, clusterCrit, psych, glmnet, RhpcBLASctl, parallel, stats, utils, methods
 RoxygenNote: 7.1.0
+biocViews: Survival, Clustering, Classification
+Suggests: knitr
+VignetteBuilder: knitr
+URL: https://github.com/duct317/SCFA

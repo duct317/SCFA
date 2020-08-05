@@ -1,0 +1,18 @@
+citHeader("To cite SCFA in publications use:")
+
+citEntry(entry="article",
+         title = "A Novel Method for Cancer Subtyping and Risk Prediction Using Consensus Factor Analysis",
+         author = personList( as.person("Duc Tran"),
+                              as.person("Hung Nguyen"),
+                              as.person("Uyen Le"),
+                              as.person("George Bebis"),
+                              as.person("Hung N. Luu"),
+                              as.person("Tin Nguyen")),
+         year = 2020,
+         journal = "Frontiers in Oncology",
+         url = "https://www.frontiersin.org/articles/10.3389/fonc.2020.01052",
+         textVersion =
+         paste("Tran, D., Nguyen, H., Le, U., Bebis, G., Luu, H. N., & Nguyen, T. (2020).",
+               "A Novel Method for Cancer Subtyping and Risk Prediction Using Consensus Factor Analysis.",
+               "Frontiers in Oncology, 10.",
+                "URL: https://www.frontiersin.org/articles/10.3389/fonc.2020.01052" ) )
