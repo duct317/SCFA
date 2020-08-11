@@ -4,11 +4,13 @@
 \name{GBM}
 \alias{GBM}
 \title{GBM}
-\format{A list with two items:
+\format{
+A list with two items:
 \describe{
   \item{data}{List of microRNA data matrix.}
   \item{survival}{Survival information.}
-}}
+}
+}
 \usage{
 GBM
 }

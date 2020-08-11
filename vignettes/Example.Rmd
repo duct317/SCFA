@@ -16,34 +16,61 @@ library(knitr)
 opts_chunk$set(fig.align = 'center', fig.width = 6, fig.height = 5, dev = 'png')
 ```
 
-#Example
-```{r, eval=TRUE}
-#Download GBM dataset 
-if(!file.exists("Example.rds")) download.file("https://bioinformatics.cse.unr.edu/software/scfa/Example/Example.rds", "Example.rds")
-#Load example data (GBM dataset), for other dataset, download the rds file from the Data folder at https://bioinformatics.cse.unr.edu/software/scfa/Data/ and replace the Example.rds
-GBM <- readRDS("Example.rds")
-#List of three matrices from three data types
-dataList <- GBM$data
-#Survival information
-survival <- GBM$survival
+# Introduction
+Cancer is an umbrella term that includes a range of disorders, from those that are fast-growing and lethal to indolent lesions with low or delayed potential for progression to death. One critical unmet challenge is that molecular disease subtypes characterized by relevant clinical differences, such as survival, are difficult to differentiate. With the advancement of multi-omics technologies, subtyping methods have shifted toward data integration in order to differentiate among subtypes from a holistic perspective that takes into consideration phenomena at multiple levels. However, these integrative methods are still limited by their statistical assumption and their sensitivity to noise. In addition, they are unable to predict the risk scores of patients using multi-omics data.
+
+To address this problem, we introduce Subtyping via Consensus Factor Analysis (SCFA), a novel method for cancer subtyping and risk prediction using consensus factor analysis. SCFA follows a three-stage hierarchical process to ensure the robustness of the discovered subtypes. First, the method uses an autoencoder to filter out genes with an insignificant contribution in characterizing each patient. Second, it applies a modified factor analysis to generate a collection of factor representations of the high-dimensional multi-omics data. Finally, it utilizes a consensus ensemble to find subtypes that are shared across all factor representations.
+
+# Installation
+To install `SCFA`, you need to install the R pacakge from Bioconductor.
+```{r, eval=FALSE}
+if (!requireNamespace("BiocManager", quietly = TRUE)) install.packages("BiocManager")
+
+BiocManager::install("SCFA")
 ```
 
+After that, install `tensorflow` and `keras` in python using `keras` R package. Please make sure the `keras` R package's version is lower than 2.2.4.1. You can you `devtools` to install the correct version. You may also need to install Anaconda if you does not have it. For more information about installation of keras, please visit https://keras.rstudio.com/
+```{r, eval=FALSE}
+utils::install.packages('devtools')
+devtools::install_version('keras', version = '2.2.4.1', repos = 'https://cran.rstudio.com/')
+if(is(try(reticulate::conda_version()), "try-error")) reticulate::install_miniconda(force = T)
+
+keras::install_keras(method = "conda", tensorflow = "1.10.0")
+```
+
+# Using SCFA
+## Preparing data
+Load the example data `GBM`
 ```{r, eval=TRUE}
+#Load required library
 library(SCFA)
 library(survival)
 
-#Generating subtyping result
+# Load example data (GBM dataset), for other dataset, download the rds file from the Data folder at https://bioinformatics.cse.unr.edu/software/scfa/Data/ and load the rds object
+data("GBM")
+# List of one matrix of microRNA data, other examples would have 3 matrices of 3 data types
+dataList <- GBM$data
+# Survival information
+survival <- GBM$survival
+```
+
+## Subtyping
+We can use the main funtion `SCFA` to generate subtypes from multi-omics data. The input of this function is a list of matrices from different data types. Each matrix has rows as samples and cells as features.
+```{r, eval=TRUE}
+# Generating subtyping result
 set.seed(1)
 subtype <- SCFA(dataList, seed = 1)
 
-#Perform survival analysis on the result
+# Perform survival analysis on the result
 coxFit <- coxph(Surv(time = Survival, event = Death) ~ as.factor(subtype), data = survival, ties="exact")
 coxP <- round(summary(coxFit)$sctest[3],digits = 20)
 print(coxP)
 ```
 
-```{r, eval=FALSE}
-#Split data to train and test
+## Predicting risk score
+We can use the function `SCFA.class` to predict risk score of patients using available survival information from training data. We need to provide the function with training data with survival information, and testing data. 
+```{r, eval=TRUE}
+# Split data to train and test
 set.seed(1)
 idx <- sample.int(nrow(dataList[[1]]), round(nrow(dataList[[1]])/2) )
 
@@ -55,10 +82,10 @@ trainSurvival <- Surv(time = survival[idx,]$Survival, event =  survival[idx,]$De
 testList <- lapply(dataList, function(x) x[-idx, ] )
 testSurvival <- Surv(time = survival[-idx,]$Survival, event =  survival[-idx,]$Death)
 
-#Perform risk prediction
+# Perform risk prediction
 result <- SCFA.class(trainList, trainSurvival, testList, seed = 1)
 
-#Validation using concordance index
+# Validation using concordance index
 c.index <- concordance(coxph(testSurvival ~ result))$concordance
 print(c.index)
 ```
