@@ -34,8 +34,6 @@ nclusterPar <- function(data, max.k = 5) {
             } else {
                 e <- i + 2
             }
-
-
         }
         for (i in e:10) {
             to.test[i, 3] <- (to.test[i, 2] - to.test[i - 1, 2])/to.test[i - 1, 2]
@@ -82,8 +80,6 @@ clustercom2 <- function(result) {
             found <- TRUE
         i <- i + 1
     }
-
-
 
     res <- t(data.frame(result$all))
     res <- res[idx, ]
@@ -192,7 +188,6 @@ wMetaC <- function(nC, hmethod, enN.cluster, minN.cluster, maxN.cluster, sil.thr
         N.cluster = length(unique(finalC))
     }
     cat("The optimal number of clusters for ensemble clustering is:", N.cluster, "\n")
-
 
     # For ease of visualization
     uC = unique(finalC)  #unique clusters
@@ -401,8 +396,6 @@ mydist <- function(data, k = 20, distance = 2) {
             D[idx[i], ] <- dis.tmp[i, tmp1]
             C[idx[i], ] <- tmp1
         }
-
-
 
     }
 
