@@ -312,7 +312,6 @@ get_opt_hclust <- function(mat, hmethod, N.cluster, minN.cluster, maxN.cluster, 
 
     h = hclust(d, method = hmethod)  #ward to ward.D
 
-
     # if N.cluster is given, we simply use the given N.cluster for hierarchical clustering if (!missing(N.cluster)
     # && is.numeric(N.cluster)) {
     if (is.numeric(N.cluster)) {
@@ -396,11 +395,8 @@ mydist <- function(data, k = 20, distance = 2) {
             D[idx[i], ] <- dis.tmp[i, tmp1]
             C[idx[i], ] <- tmp1
         }
-
     }
-
     list(D, C)
-
 }
 
 
