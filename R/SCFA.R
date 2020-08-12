@@ -5,13 +5,14 @@
 #' @importFrom foreach %dopar% foreach
 #' @importFrom psych fa
 #' @importFrom RhpcBLASctl blas_set_num_threads
+#' @importFrom doRNG %dorng%
 #' @title SCFA
 #' @description The main function to perform subtyping
 #' @param dataList List of data matrices. In each matrix, rows represent samples and columns represent genes/features.
 #' @param k Number of clusters, leave as default for auto detection.
 #' @param max.k Maximum number of cluster
 #' @param ncores Number of processor cores to use.
-#' @param seed Seed for reproducibility.
+#' @param seed Seed for reproducibility, you still need to use set.seed function for full reproducibility.
 #' @return A numeric vector containing cluster assignment for each sample.
 #' @examples
 #' #Load example data (GBM dataset)
@@ -31,7 +32,6 @@
 #' @export
 SCFA <- function(dataList, k = NULL, max.k = 5, ncores = 10L, seed = NULL) {
     gen.fil = TRUE
-    set.seed(seed)
     all_data = NULL
     all_clus = NULL
     all_latent = NULL
@@ -70,7 +70,6 @@ SCFA <- function(dataList, k = NULL, max.k = 5, ncores = 10L, seed = NULL) {
 
 
 SCFA.basic <- function(data = data, k = NULL, max.k = 5, ncores = 10L, gen.fil = TRUE, seed = NULL) {
-    set.seed(seed)
     non.zero.prop <- colSums2(data != 0)/nrow(data)
     data <- data[, non.zero.prop > 0]
 
@@ -91,10 +90,7 @@ SCFA.basic <- function(data = data, k = NULL, max.k = 5, ncores = 10L, gen.fil =
         or <- list()
         cl <- parallel::makeCluster(3, outfile = "/dev/null")
         registerDoParallel(cl, cores = 3)
-        parallel::clusterEvalQ(cl, {
-            # library(SCFA)
-        })
-        or <- foreach(i = seq(3)) %dopar% {
+        or <- foreach(i = seq(3), .options.RNG=seed) %dorng% {
             if (is.null(seed)) {
                 config <- list()
 
@@ -107,7 +103,6 @@ SCFA.basic <- function(data = data, k = NULL, max.k = 5, ncores = 10L, gen.fil =
 
                 k_set_session(session = sess)
             } else {
-                set.seed((seed + i))
                 use_session_with_seed((seed + i))
             }
 
@@ -162,11 +157,9 @@ SCFA.basic <- function(data = data, k = NULL, max.k = 5, ncores = 10L, gen.fil =
     cl <- parallel::makeCluster(min(10, ncores), outfile = "/dev/null")
     doParallel::registerDoParallel(cl, cores = min(10, ncores))
     parallel::clusterEvalQ(cl, {
-        # library(SCFA)
         RhpcBLASctl::blas_set_num_threads(1)
     })
-    latent <- foreach(counter = seq(length(re))) %dopar% {
-        set.seed(counter)
+    latent <- foreach(counter = seq(length(re)), .options.RNG=seed) %dorng% {
         i <- re[counter]
         tmp <- da * matrix(rnorm(da, sd = 0.02, mean = 1), ncol = ncol(da))
         fit <- fa(t(tmp), nfactors = i, rotate = "varimax", scores = "tenBerge")
@@ -179,17 +172,13 @@ SCFA.basic <- function(data = data, k = NULL, max.k = 5, ncores = 10L, gen.fil =
     cl <- parallel::makeCluster(min(length(latent), ncores), outfile = "/dev/null")
     doParallel::registerDoParallel(cl, cores = min(length(latent), ncores))
     parallel::clusterEvalQ(cl, {
-        # library(SCFA)
         RhpcBLASctl::blas_set_num_threads(1)
     })
-    result$all <- foreach(x = latent) %dopar% {
-        set.seed(seed)
+    result$all <- foreach(x = latent, .options.RNG=seed) %dorng% {
         cluster <- clus(x, k = k, max.k = max.k)
         cluster
     }
     parallel::stopCluster(cl)
-
-    set.seed(seed)
 
     final <- clustercom2(result)
 
@@ -214,7 +203,7 @@ SCFA.basic <- function(data = data, k = NULL, max.k = 5, ncores = 10L, gen.fil =
 #' @param trainLabel Survival information of patient in training set in form of Surv object.
 #' @param dataListTest List of testing data matrices. In each matrix, rows represent samples and columns represent genes/features.
 #' @param ncores Number of processor cores to use.
-#' @param seed Seed for reproducibility.
+#' @param seed Seed for reproducibility, you still need to use set.seed function for full reproducibility.
 #' @return A vector of risk score predictions for patient in test set.
 #' @examples
 #' #Load example data (GBM dataset)
@@ -241,7 +230,6 @@ SCFA.basic <- function(data = data, k = NULL, max.k = 5, ncores = 10L, gen.fil =
 SCFA.class <- function(dataListTrain, trainLabel, dataListTest, ncores = 10L, seed = NULL) {
     alpha = 0.5
     nfold = 5
-    set.seed(seed)
 
     dataList <- list()
     for (i in seq(length(dataListTrain))) {
@@ -299,7 +287,6 @@ SCFA.class <- function(dataListTrain, trainLabel, dataListTest, ncores = 10L, se
 }
 
 SCFA.basic.class <- function(data = data, ncores = 10L, gen.fil = TRUE, seed = NULL) {
-    set.seed(seed)
     non.zero.prop <- colSums2(data != 0)/nrow(data)
     data <- data[, non.zero.prop > 0]
 
@@ -320,10 +307,7 @@ SCFA.basic.class <- function(data = data, ncores = 10L, gen.fil = TRUE, seed = N
         or <- list()
         cl <- parallel::makeCluster(3, outfile = "/dev/null")
         registerDoParallel(cl, cores = 3)
-        parallel::clusterEvalQ(cl, {
-            # library(SCFA)
-        })
-        or <- foreach(i = seq(3)) %dopar% {
+        or <- foreach(i = seq(3), .options.RNG=seed) %dorng% {
             if (is.null(seed)) {
                 config <- list()
 
@@ -336,7 +320,6 @@ SCFA.basic.class <- function(data = data, ncores = 10L, gen.fil = TRUE, seed = N
 
                 k_set_session(session = sess)
             } else {
-                set.seed((seed + i))
                 use_session_with_seed((seed + i))
             }
 
@@ -391,11 +374,9 @@ SCFA.basic.class <- function(data = data, ncores = 10L, gen.fil = TRUE, seed = N
     cl <- parallel::makeCluster(min(10, ncores), outfile = "/dev/null")
     doParallel::registerDoParallel(cl, cores = min(10, ncores))
     parallel::clusterEvalQ(cl, {
-        # library(SCFA)
         RhpcBLASctl::blas_set_num_threads(1)
     })
-    latent <- foreach(counter = seq(length(re))) %dopar% {
-        set.seed(counter)
+    latent <- foreach(counter = seq(length(re)), .options.RNG=seed) %dorng% {
         i <- re[counter]
         tmp <- da * matrix(rnorm(da, sd = 0.02, mean = 1), ncol = ncol(da))
         fit <- fa(t(tmp), nfactors = i, rotate = "varimax", scores = "tenBerge")
@@ -413,8 +394,8 @@ SCFA.basic.class <- function(data = data, ncores = 10L, gen.fil = TRUE, seed = N
 #'
 #' @format A list with two items:
 #' \describe{
-#'   \item{data}{List of microRNA data matrix.}
-#'   \item{survival}{Survival information.}
+#'     \item{data}{List of microRNA data matrix.}
+#'     \item{survival}{Survival information.}
 #' }
 "GBM"
 

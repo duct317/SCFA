@@ -15,7 +15,7 @@ SCFA(dataList, k = NULL, max.k = 5, ncores = 10L, seed = NULL)
 
 \item{ncores}{Number of processor cores to use.}
 
-\item{seed}{Seed for reproducibility.}
+\item{seed}{Seed for reproducibility, you still need to use set.seed function for full reproducibility.}
 }
 \value{
 A numeric vector containing cluster assignment for each sample.

@@ -7,8 +7,8 @@
 \format{
 A list with two items:
 \describe{
-  \item{data}{List of microRNA data matrix.}
-  \item{survival}{Survival information.}
+    \item{data}{List of microRNA data matrix.}
+    \item{survival}{Survival information.}
 }
 }
 \usage{

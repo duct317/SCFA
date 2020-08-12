@@ -10,7 +10,7 @@ Encoding: UTF-8
 LazyData: true
 Depends: R (>= 3.6)
 Imports: matrixStats, foreach, keras (<= 2.2.4.1), tensorflow (<= 2.2.0), doParallel, 
-  igraph, Matrix, cluster, clusterCrit, psych, glmnet, RhpcBLASctl, parallel, stats, utils, methods
+  igraph, Matrix, cluster, clusterCrit, psych, glmnet, RhpcBLASctl, parallel, stats, utils, methods, doRNG
 RoxygenNote: 7.1.1
 biocViews: Survival, Clustering, Classification
 Suggests: knitr

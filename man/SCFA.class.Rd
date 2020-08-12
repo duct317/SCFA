@@ -15,7 +15,7 @@ SCFA.class(dataListTrain, trainLabel, dataListTest, ncores = 10L, seed = NULL)
 
 \item{ncores}{Number of processor cores to use.}
 
-\item{seed}{Seed for reproducibility.}
+\item{seed}{Seed for reproducibility, you still need to use set.seed function for full reproducibility.}
 }
 \value{
 A vector of risk score predictions for patient in test set.
