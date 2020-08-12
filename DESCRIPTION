@@ -1,7 +1,7 @@
 Package: SCFA
 Type: Package
 Title: SCFA: Subtyping via Consensus Factor Analysis
-Version: 0.1.0
+Version: 0.99.0
 Author: Duc Tran
 Maintainer: Duc Tran <duct@nevada.unr.edu>
 Description: SCFA provides a fast and accurate platform for cancer subtyping and risk prediction
