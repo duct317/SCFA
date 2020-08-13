@@ -6,7 +6,7 @@
 #' @importFrom psych fa
 #' @importFrom RhpcBLASctl blas_set_num_threads
 #' @importFrom doRNG %dorng%
-#' @import survival
+#' @importFrom survival coxph
 #' @title SCFA
 #' @description The main function to perform subtyping
 #' @param dataList List of data matrices. In each matrix, rows represent samples and columns represent genes/features.

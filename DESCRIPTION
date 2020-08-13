@@ -1,7 +1,7 @@
 Package: SCFA
 Type: Package
 Title: SCFA: Subtyping via Consensus Factor Analysis
-Version: 0.99.3
+Version: 0.99.4
 Authors@R: c(
     person("Duc", "Tran", , "duct@nevada.unr.edu", role = c("aut", "cre")),
     person("Hung", "Nguyen", role = c("aut")),
@@ -12,6 +12,7 @@ Description: Subtyping via Consensus Factor Analysis (SCFA) can efficiently remo
 License: LGPL
 Encoding: UTF-8
 LazyData: true
+Depends: R (>= 4.0)
 Imports: matrixStats, foreach, keras, tensorflow, doParallel, 
   igraph, Matrix, cluster, clusterCrit, psych, glmnet, RhpcBLASctl, parallel, stats, utils, methods, doRNG, survival
 RoxygenNote: 7.1.1
