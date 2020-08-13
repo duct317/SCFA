@@ -33,7 +33,7 @@ survival <- GBM$survival
 library(survival)
 #Generating subtyping result
 set.seed(1)
-subtype <- SCFA(dataList, seed = 1)
+subtype <- SCFA(dataList, seed = 1, ncores = 2L)
 #Perform survival analysis on the result
 coxFit <- coxph(Surv(time = Survival, event = Death) ~ as.factor(subtype), data = survival, ties="exact")
 coxP <- round(summary(coxFit)$sctest[3],digits = 20)

@@ -57,7 +57,7 @@ We can use the main funtion `SCFA` to generate subtypes from multi-omics data. T
 ```{r, eval=TRUE}
 # Generating subtyping result
 set.seed(1)
-subtype <- SCFA(dataList, seed = 1)
+subtype <- SCFA(dataList, seed = 1, ncores = 4L)
 
 # Perform survival analysis on the result
 coxFit <- coxph(Surv(time = Survival, event = Death) ~ as.factor(subtype), data = survival, ties="exact")
@@ -81,7 +81,7 @@ testList <- lapply(dataList, function(x) x[-idx, ] )
 testSurvival <- Surv(time = survival[-idx,]$Survival, event =  survival[-idx,]$Death)
 
 # Perform risk prediction
-result <- SCFA.class(trainList, trainSurvival, testList, seed = 1)
+result <- SCFA.class(trainList, trainSurvival, testList, seed = 1, ncores = 4L)
 
 # Validation using concordance index
 c.index <- concordance(coxph(testSurvival ~ result))$concordance

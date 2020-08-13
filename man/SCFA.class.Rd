@@ -40,7 +40,7 @@ trainSurvival <- Surv(time = survival[idx,]$Survival, event =  survival[idx,]$De
 testList <- lapply(dataList, function(x) x[-idx, ] )
 testSurvival <- Surv(time = survival[-idx,]$Survival, event =  survival[-idx,]$Death)
 #Perform risk prediction
-result <- SCFA.class(trainList, trainSurvival, testList, seed = 1)
+result <- SCFA.class(trainList, trainSurvival, testList, seed = 1, ncores = 2L)
 #Validation using concordance index
 c.index <- concordance(coxph(testSurvival ~ result))$concordance
 print(c.index)

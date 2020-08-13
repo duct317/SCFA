@@ -1,19 +1,19 @@
 Package: SCFA
 Type: Package
 Title: SCFA: Subtyping via Consensus Factor Analysis
-Version: 0.99.2
+Version: 0.99.3
 Authors@R: c(
     person("Duc", "Tran", , "duct@nevada.unr.edu", role = c("aut", "cre")),
     person("Hung", "Nguyen", role = c("aut")),
     person("Tin", "Nguyen", role = c("fnd"))
     )
-Description: SCFA provides a fast and accurate platform for cancer subtyping and risk prediction
+Description: Subtyping via Consensus Factor Analysis (SCFA) can efficiently remove noisy signals from consistent molecular patterns in multi-omics data.
+  It can reliably identify cancer subtypes and accurately predict risk scores of patients.
 License: LGPL
 Encoding: UTF-8
 LazyData: true
-Depends: R (>= 3.6)
 Imports: matrixStats, foreach, keras, tensorflow, doParallel, 
-  igraph, Matrix, cluster, clusterCrit, psych, glmnet, RhpcBLASctl, parallel, stats, utils, methods, doRNG
+  igraph, Matrix, cluster, clusterCrit, psych, glmnet, RhpcBLASctl, parallel, stats, utils, methods, doRNG, survival
 RoxygenNote: 7.1.1
 biocViews: Survival, Clustering, Classification
 Suggests: knitr

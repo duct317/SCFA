@@ -6,6 +6,7 @@
 #' @importFrom psych fa
 #' @importFrom RhpcBLASctl blas_set_num_threads
 #' @importFrom doRNG %dorng%
+#' @import survival
 #' @title SCFA
 #' @description The main function to perform subtyping
 #' @param dataList List of data matrices. In each matrix, rows represent samples and columns represent genes/features.
@@ -24,7 +25,7 @@
 #' library(survival)
 #' #Generating subtyping result
 #' set.seed(1)
-#' subtype <- SCFA(dataList, seed = 1)
+#' subtype <- SCFA(dataList, seed = 1, ncores = 2L)
 #' #Perform survival analysis on the result
 #' coxFit <- coxph(Surv(time = Survival, event = Death) ~ as.factor(subtype), data = survival, ties="exact")
 #' coxP <- round(summary(coxFit)$sctest[3],digits = 20)
@@ -222,7 +223,7 @@ SCFA.basic <- function(data = data, k = NULL, max.k = 5, ncores = 10L, gen.fil =
 #' testList <- lapply(dataList, function(x) x[-idx, ] )
 #' testSurvival <- Surv(time = survival[-idx,]$Survival, event =  survival[-idx,]$Death)
 #' #Perform risk prediction
-#' result <- SCFA.class(trainList, trainSurvival, testList, seed = 1)
+#' result <- SCFA.class(trainList, trainSurvival, testList, seed = 1, ncores = 2L)
 #' #Validation using concordance index
 #' c.index <- concordance(coxph(testSurvival ~ result))$concordance
 #' print(c.index)
