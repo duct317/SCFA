@@ -29,10 +29,8 @@ if (!requireNamespace("BiocManager", quietly = TRUE)) install.packages("BiocMana
 BiocManager::install("SCFA")
 ```
 
-After that, install `tensorflow` and `keras` in python using `keras` R package. Please make sure the `keras` R package's version is lower than 2.2.4.1. You can you `devtools` to install the correct version. You may also need to install Anaconda if you does not have it. For more information about installation of keras, please visit https://keras.rstudio.com/
+After that, install `tensorflow` and `keras` in python using `keras` R package. You may also need to install Anaconda if you does not have it. For more information about installation of keras, please visit https://keras.rstudio.com/
 ```{r, eval=FALSE}
-utils::install.packages('devtools')
-devtools::install_version('keras', version = '2.2.4.1', repos = 'https://cran.rstudio.com/')
 if(is(try(reticulate::conda_version()), "try-error")) reticulate::install_miniconda(force = T)
 
 keras::install_keras(method = "conda", tensorflow = "1.10.0")
