@@ -2,6 +2,7 @@
 Subtyping via Consensus Factor Analysis (SCFA) can efficiently remove noisy signals from consistent molecular patterns in order to reliably identify cancer subtypes and accurately predict risk scores of patients.
 # How to install
 - The package can be installed from this repository.
+- Install devtools: `utils::install.packages('devtools')`
 - Install the package using: `devtools::install_github('duct317/SCFA')`
 - Install tensorflow and keras in python using: `keras::install_keras(tensorflow = "1.10.0")`
 - For more information about installation of keras, please visit https://keras.rstudio.com/
