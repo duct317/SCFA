@@ -7,8 +7,10 @@ output:
         toc: true
 vignette: >
     %\VignetteIndexEntry{SCFA package manual}
-    %\VignetteEngine{knitr::rmarkdown}
     \usepackage[utf8]{inputenc}
+    %\VignetteEngine{knitr::rmarkdown}
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r knitr-options, echo=FALSE, message=FALSE, warning=FALSE}
@@ -38,7 +40,7 @@ keras::install_keras(method = "conda", tensorflow = "1.10.0")
 
 # Using SCFA
 ## Preparing data
-Load the example data `GBM`
+Load the example data `GBM`. GBM is the Glioblastoma cancer dataset. 
 ```{r, eval=TRUE}
 #Load required library
 library(SCFA)
@@ -53,7 +55,7 @@ survival <- GBM$survival
 ```
 
 ## Subtyping
-We can use the main funtion `SCFA` to generate subtypes from multi-omics data. The input of this function is a list of matrices from different data types. Each matrix has rows as samples and cells as features.
+We can use the main funtion `SCFA` to generate subtypes from multi-omics data. The input of this function is a list of matrices from different data types. Each matrix has rows as samples and cells as features. The output of this function is subtype assignment for each patient. We can perform survival analysis to determine the significance in survival differences between discovered subtypes.
 ```{r, eval=TRUE}
 # Generating subtyping result
 set.seed(1)
@@ -66,7 +68,7 @@ print(coxP)
 ```
 
 ## Predicting risk score
-We can use the function `SCFA.class` to predict risk score of patients using available survival information from training data. We need to provide the function with training data with survival information, and testing data. 
+We can use the function `SCFA.class` to predict risk score of patients using available survival information from training data. We need to provide the function with training data with survival information, and testing data. The output is the risk score of each patient. Patient with higher risk scores have higher probablity to experience event before the other patient. Concordance index is use to confirm the correlation between predicted risk scores and survival information.
 ```{r, eval=TRUE}
 # Split data to train and test
 set.seed(1)
@@ -84,7 +86,7 @@ testSurvival <- Surv(time = survival[-idx,]$Survival, event =  survival[-idx,]$D
 result <- SCFA.class(trainList, trainSurvival, testList, seed = 1, ncores = 4L)
 
 # Validation using concordance index
-c.index <- concordance(coxph(testSurvival ~ result))$concordance
+c.index <- survival::concordance(coxph(testSurvival ~ result))$concordance
 print(c.index)
 ```
 

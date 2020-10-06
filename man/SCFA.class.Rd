@@ -21,7 +21,7 @@ SCFA.class(dataListTrain, trainLabel, dataListTest, ncores = 10L, seed = NULL)
 A vector of risk score predictions for patient in test set.
 }
 \description{
-This function provides low dimensional representations for risk prediction.
+Perform risk score prediction on input data. This function requires training data with survival information. The output is the risk scores of patients in testing set.
 }
 \examples{
 #Load example data (GBM dataset)
