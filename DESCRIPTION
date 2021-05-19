@@ -1,7 +1,7 @@
 Package: SCFA
 Type: Package
 Title: SCFA: Subtyping via Consensus Factor Analysis
-Version: 1.1.0
+Version: 1.2.0
 Authors@R: c(
     person("Duc", "Tran", , "duct@nevada.unr.edu", role = c("aut", "cre")),
     person("Hung", "Nguyen", role = c("aut")),
