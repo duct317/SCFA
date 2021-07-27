@@ -31,16 +31,17 @@ if (!requireNamespace("BiocManager", quietly = TRUE)) install.packages("BiocMana
 BiocManager::install("SCFA")
 ```
 
-After that, install `tensorflow` and `keras` in python using `keras` R package. You may also need to install Anaconda if you does not have it. For more information about installation of keras, please visit https://keras.rstudio.com/
+SCFA depends on the `torch` package to build and train the autoencoders. When SCFA package is loaded, it will check for the availability of `C++ libtorch`. `torch` package can be used to install `C++ libtorch`, which is necessary for neural network computation. 
 ```{r, eval=FALSE}
-if(is(try(reticulate::conda_version()), "try-error")) reticulate::install_miniconda(force = T)
+library(SCFA)
 
-keras::install_keras(method = "conda", tensorflow = "1.10.0")
+# If libtorch is not automatically installed by torch, it can be installed manually using:
+torch::install_torch()
 ```
 
 # Using SCFA
 ## Preparing data
-Load the example data `GBM`. GBM is the Glioblastoma cancer dataset. 
+Load the example data `GBM`. `GBM` is the Glioblastoma cancer dataset. 
 ```{r, eval=TRUE}
 #Load required library
 library(SCFA)
@@ -90,3 +91,6 @@ c.index <- survival::concordance(coxph(testSurvival ~ result))$concordance
 print(c.index)
 ```
 
+```{r, eval=TRUE}
+sessionInfo()
+```
