@@ -1,4 +1,3 @@
-#' @import keras tensorflow
 #' @importFrom BiocParallel SnowParam bplapply
 #' @importFrom matrixStats colSums2 rowSds rowMeans2 rowMaxs rowMins colSds
 #' @importFrom stats predict rnorm quantile
@@ -39,9 +38,9 @@ SCFA <- function(dataList, k = NULL, max.k = 5, ncores = 10L, seed = NULL) {
         if (max(data) <= 1)
             data <- 10^data - 1
 
-        if (ncol(data) > 50000) {
+        if (ncol(data) > 10000) {
             col_mean_data = colMeans(data)
-            idx <- order(col_mean_data, decreasing = TRUE)[seq(50000)]
+            idx <- order(col_mean_data, decreasing = TRUE)[seq(10000)]
             data <- data[, idx]
         }
 
@@ -74,17 +73,11 @@ gene.filtering <- function(data, original_dim, batch_size, ncores.ind, seed)
     param <- SnowParam(workers = 3, RNGseed = seed)
     FUN <- function(i, data, original_dim, batch_size, seed)
     {
-        if (is.null(seed)) {
-            config <- list()
-            config$intra_op_parallelism_threads <- ncores.ind
-            config$inter_op_parallelism_threads <- ncores.ind
-            session_conf <- do.call(tf$ConfigProto, config)
-            sess <- tf$Session(graph = tf$get_default_graph(), config = session_conf)
-            k_set_session(session = sess)
-        } else {
-            use_session_with_seed((seed + i))
+        if (!is.null(seed))
+        {
+            set.seed((seed+i))
+            torch_manual_seed((seed+i))
         }
-
         if (nrow(data) > 2000) {
             ind <- sample.int(nrow(data), 2000, replace = FALSE)
             data.tmp <- data[ind, ]
@@ -92,16 +85,31 @@ gene.filtering <- function(data, original_dim, batch_size, ncores.ind, seed)
         } else {
             data.tmp <- data
         }
-        x <- layer_input(shape = c(original_dim))
-        h <- layer_dense(x, 25, kernel_constraint = constraint_nonneg())
-        x_decoded_mean <- layer_dense(h, original_dim)
-        vae <- keras_model(x, x_decoded_mean)
-        vae <- compile(vae, optimizer = tf$contrib$opt$AdamWOptimizer(1e-04, 0.001), loss = "mse")
-        his <- fit(vae, data.tmp, data.tmp, shuffle = TRUE, epochs = 5, batch_size = batch_size, verbose = 0)
-        W <- get_weights(get_layer(vae, index = 2))[[1]]
+        torch::torch_set_num_threads(1)
+        torch::torch_set_num_interop_threads(1)
+        RhpcBLASctl::blas_set_num_threads(1)
+
+        data_train <- SCFA_dataset(data.tmp)
+        dl <- data_train %>% dataloader(batch_size = batch_size, shuffle = TRUE)
+        model <- SCFA_AE(original_dim, 10)
+        optimizer <- optim_adamw(model$parameters, lr = 5e-5, weight_decay = 1e-2, eps = 1e-7)
+        for (epoch in 1:5) {
+            optimizer$zero_grad()
+            for (b in enumerate(dl)) {
+                output <- model(b[[1]])
+                loss <- torch::nnf_mse_loss(output, b[[1]])
+                loss$backward()
+                optimizer$step()
+                optimizer$zero_grad()
+                with_no_grad({
+                    model$fc1$weight$copy_(model$fc1$weight$data()$clamp(min=0))
+                })
+            }
+        }
+        W <- t(as.matrix(model$fc1$weight))
         Wsd <- rowSds(W)
         Wsd[is.na(Wsd)] <- 0
-        Wsd <- (Wsd - min(Wsd))/(max(Wsd) - min(Wsd))
+        Wsd <- (Wsd-min(Wsd))/(max(Wsd)-min(Wsd))
         Wsd
     }
     suppressMessages(suppressWarnings(
@@ -189,7 +197,6 @@ SCFA.basic <- function(data = data, k = NULL, max.k = 5, ncores = 10L,
 }
 
 
-#' @import keras tensorflow
 #' @importFrom matrixStats colSums2 rowSds rowMeans2 rowMaxs rowMins colSds
 #' @importFrom stats predict rnorm quantile
 #' @importFrom psych fa
@@ -281,3 +288,9 @@ SCFA.class <- function(dataListTrain, trainLabel, dataListTest, ncores = 10L, se
 #' }
 "GBM"
 
+.onAttach <- function(libname, pkgname) {
+    if(!torch::torch_is_installed())
+    {
+        packageStartupMessage("libtorch is not installed. Use `torch::install_torch()` to download and install libtorch")
+    }
+}

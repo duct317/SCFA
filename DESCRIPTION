@@ -14,7 +14,7 @@ License: LGPL
 Encoding: UTF-8
 LazyData: true
 Depends: R (>= 4.0)
-Imports: matrixStats, keras, tensorflow, BiocParallel, 
+Imports: matrixStats, BiocParallel, torch,
   igraph, Matrix, cluster, clusterCrit, psych, glmnet, RhpcBLASctl, stats, utils, methods, survival
 RoxygenNote: 7.1.1
 biocViews: Survival, Clustering, Classification
