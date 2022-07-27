@@ -1,22 +1,22 @@
 #' @importFrom stats kmeans
 #' @importFrom methods is
 clus <- function(data, k = NULL, max.k = 5) {
-    if (is.null(k))
-        k <- nclusterPar(data, max.k = max.k)
-    if (nrow(data) < 1000 & (k <= 5)) {
-        k <- kmeans(data, k, nstart = 100, iter.max = 1e+06)
+    if (is.null(k)) k <- nclusterPar(data, max.k = max.k)
+    if (nrow(data) < 1e3 & (k <= 5))
+    {
+        k <- kmeans(data, k, nstart = 100, iter.max = 1e6)
         k$cluster
-    } else {
+    } else
+    {
         kknn <- try(specClust(data, k, nn = 7))
         while (is(kknn, "try-error")) {
-            k <- k + 1
+            k <- k +1
             kknn <- try(specClust(data, k, nn = 7))
         }
         kknn$cluster
     }
 
 }
-
 
 nclusterPar <- function(data, max.k = 5) {
     result <- lapply(seq(10), function(j) {
@@ -62,7 +62,7 @@ clustercom2 <- function(result) {
         i <- 1
     }
     while (!found) {
-        k <- kmeans(test, i, nstart = 100, iter.max = 5000)$cluster
+        k <- kmeans(test, i, nstart = 100, iter.max = 5e3)$cluster
         max <- 0
         for (c in unique(k)) {
             score <- mean(test[which(k == c), which(k == c)])
@@ -111,8 +111,10 @@ adjustedRandIndex <- function(x, y) {
 #' @import clusterCrit
 #' @importFrom stats as.dist cutree hclust median
 #' @import Matrix
-wMetaC <- function(nC, hmethod, enN.cluster, minN.cluster, maxN.cluster, sil.thre, height.Ntimes) {
-    # This is to obtain the weight matrix for each cluster solution for following meta-clustering
+wMetaC <- function(nC, hmethod, enN.cluster, minN.cluster, maxN.cluster, sil.thre,
+                    height.Ntimes) {
+    # This is to obtain the weight matrix for each cluster solution for following
+    # meta-clustering
     N <- nrow(nC)  #number of points
     C <- ncol(nC)  #number of clustering methods/times; or K
     AA <- Reduce("+", apply(nC, 2, getA))  #sum over obtained matrices; execute along the column and then matrix sum
@@ -130,16 +132,22 @@ wMetaC <- function(nC, hmethod, enN.cluster, minN.cluster, maxN.cluster, sil.thr
     R <- unique(x)  #all unique labels
     allC <- length(R)  #number of all unique labels
     cb <- combn(allC, 2)  #all possible combinations (n*(n-1)/2)
-    alls <- apply(cb, 2, getss, R = R, x = x, w1 = w1)  #calculate the weight s for all combinations
+    # alls = apply(cb, 2, getss, R = R, x = x, w1 = w1)  #calculate the weight s for all combinations, slow
+    allk <- lapply(R, function(r) {
+        d <- as.numeric(unlist(strsplit(r, "_")))
+        which(nC[,d[2]] == d[1])
+    })
+    alls <- apply(cb, 2, getss1, R = R, x = x, w1 = w1, allk = allk)  #calculate the weight s for all combinations
     S0 <- sparseMatrix(i = cb[1, ], j = cb[2, ], x = alls, dims = c(allC, allC))  #triangle part of the S
     S <- S0 + t(S0) + diag(allC)
     if (missing(sil.thre)) {
         sil.thre <- 0
     }
-    hres <- get_opt_hclust(S, hmethod, N.cluster = enN.cluster, minN.cluster, maxN.cluster, sil.thre, height.Ntimes)  #solely using the silhouette index as the criteria
+    hres <- get_opt_hclust(S, hmethod, N.cluster = enN.cluster, minN.cluster, maxN.cluster,
+                            sil.thre, height.Ntimes)  #solely using the silhouette index as the criteria
     tf <- hres$f
     v <- hres$v
-    cat("The number of clusters before voting is: ", hres$optN.cluster, "\n")
+
     newnC[] <- vapply(newnC, function(q) tf[match(q, R)], numeric(1))  #apply to every element; reorganizing the clusters for different results
     finalC <- apply(newnC, 1, function(d) names(sort(table(d), decreasing = TRUE)[1]))  #find the most repeated elements for each row
     N.cluster <- length(unique(finalC))  #note that the number of clusters for meta-clustering is not determined by previous selection, but by the unique number in the final round.
@@ -156,10 +164,8 @@ wMetaC <- function(nC, hmethod, enN.cluster, minN.cluster, maxN.cluster, sil.thr
             }
             return(y)
         })
-
         N.cluster <- length(unique(finalC))
     }
-    cat("The optimal number of clusters for ensemble clustering is:", N.cluster, "\n")
     # For ease of visualization
     uC <- unique(finalC)  #unique clusters
 
@@ -169,13 +175,10 @@ wMetaC <- function(nC, hmethod, enN.cluster, minN.cluster, maxN.cluster, sil.thr
             t[i] <- length(which(q %in% uC[i]))
         }
         return(t)
-    })  #need to reorganize before counting
-    # print(dim(y0))
-    y0 <- t(y0)  #transpose
+    })#need to reorganize before counting
+    y0 <- t(y0)#transpose
     x0 <- matrix(0, nrow = N, ncol = N.cluster)
-    # print(dim(x0))
     tw <- 0.5
-    # print(uC)
     for (i in seq(N)) {
         xind <- which(finalC[i] == uC)
         x0[i, xind] <- 1  #the correct clustering result
@@ -191,15 +194,15 @@ wMetaC <- function(nC, hmethod, enN.cluster, minN.cluster, maxN.cluster, sil.thr
     return(out)
 }
 
-
-
-
 getA <- function(rowColor) {
-    # This is to obtain the weighted co-association matrix for clustering solution rowColor
+    # This is to obtain the weighted co-association matrix for clustering solution
+    # rowColor
     N <- length(rowColor)  #number of points
+
     L <- levels(factor(rowColor))
+
     # find indices for each cluster, then all combinations of indices
-    tmp = vapply(L, function(k) {
+    tmp <- vapply(L, function(k) {
         r <- which(rowColor %in% k)
         expand.grid(r, r)
     }, c(list(1), list(1)))
@@ -209,8 +212,16 @@ getA <- function(rowColor) {
     return(A)
 }
 
-
-
+getss1 <- function(pind, R, x, w1, allk) {
+    # This is to get the element of S
+    intset <- intersect(allk[[pind[1]]], allk[[pind[2]]])  #set intersection
+    ss <- 0
+    if (length(intset) != 0) {
+        uset <- union(allk[[pind[1]]], allk[[pind[2]]])  #set union
+        ss <- sum(w1[intset])/sum(w1[uset])
+    }
+    return(ss)
+}
 
 getss <- function(pind, R, x, w1) {
     # This is to get the element of S
@@ -233,7 +244,8 @@ getnewk <- function(k, R, x, N) {
     return(newk1)
 }
 
-get_opt_hclust <- function(mat, hmethod, N.cluster, minN.cluster, maxN.cluster, sil.thre, height.Ntimes) {
+get_opt_hclust <- function(mat, hmethod, N.cluster, minN.cluster, maxN.cluster, sil.thre,
+                            height.Ntimes) {
     # if no agglomeration method for hierarchical clustering is provided
     if (missing(hmethod) || is.null(hmethod)) {
         hmethod <- "ward.D"  #the default hierarchical clustering agglomeration method is 'ward.D'
@@ -254,8 +266,8 @@ get_opt_hclust <- function(mat, hmethod, N.cluster, minN.cluster, maxN.cluster, 
     if (missing(height.Ntimes) || is.null(height.Ntimes)) {
         height.Ntimes <- 2  #by default, we select the first height which is (height.Ntimes) times larger than the immediate consecutive height
     }
-    # just use simple criteria to determine whether they are feature vectors or similarity matrix, and then we use
-    # different ways to measure the distance
+    # just use simple criteria to determine whether they are feature vectors or
+    # similarity matrix, and then we use different ways to measure the distance
     if (Matrix::isSymmetric(mat)) {
         # symmmetric matrix
         d <- as.dist(1 - mat)
@@ -264,9 +276,10 @@ get_opt_hclust <- function(mat, hmethod, N.cluster, minN.cluster, maxN.cluster, 
         d <- as.dist(1 - cor(t(mat)))
         flag1 <- 0
     }
-    h = hclust(d, method = hmethod)  #ward to ward.D
-    # if N.cluster is given, we simply use the given N.cluster for hierarchical clustering if (!missing(N.cluster)
-    # && is.numeric(N.cluster)) {
+    h <- hclust(d, method = hmethod)  #ward to ward.D
+    # if N.cluster is given, we simply use the given N.cluster for hierarchical
+    # clustering
+    #     if (!missing(N.cluster) && is.numeric(N.cluster)) {
     if (is.numeric(N.cluster)) {
         if (!is.numeric(N.cluster)) {
             stop("The given N.cluster is not a numeric!")
@@ -286,9 +299,9 @@ get_opt_hclust <- function(mat, hmethod, N.cluster, minN.cluster, maxN.cluster, 
         CHind <- unlist(ch0, use.names = FALSE)  #convert a list to a vector/value
         optN.cluster <- N.cluster
     }
-    hres = list()
-    hres$f <- f  #optimal clustering results
-    hres$v <- v  #different numbers of clustering results
+    hres <- list()
+    hres$f <- f#optimal clustering results
+    hres$v <- v#different numbers of clustering results
     hres$maxsil <- max(msil)
     hres$msil <- msil
     hres$CHind <- CHind
@@ -350,7 +363,7 @@ mydist <- function(data, k = 20, distance = 2) {
 }
 
 
-getClosest = function(X, Y) {
+getClosest <- function(X, Y) {
     m <- nrow(Y)
     n <- nrow(X)
     res <- matrix(0, n, m)
@@ -429,7 +442,7 @@ specClust <- function(data, centers = NULL, nn = 7, method = "symmetric", gmax =
 
     if (is.null(gmax)) {
         if (!is.null(centers))
-            gmax <- centers - 1L else gmax = 1L
+            gmax <- centers - 1L else gmax <- 1L
     }
     test <- TRUE
     DC.tmp <- mydist(data, 30)
@@ -444,7 +457,7 @@ specClust <- function(data, centers = NULL, nn = 7, method = "symmetric", gmax =
         if (length(g) > 1) {
             # warning('graph not connected')
             if (length(g) >= gmax)
-                nn <- nn + 2 else test = FALSE
+                nn <- nn + 2 else test <- FALSE
         } else test <- FALSE
     }
 

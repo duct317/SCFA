@@ -5,7 +5,7 @@
 #' @importFrom RhpcBLASctl blas_set_num_threads
 #' @importFrom survival coxph
 #' @title SCFA
-#' @description The main function to perform subtyping. It takes a list of data matrices as the input and outputs the subtype for each patient.
+#' @description The main function to perform subtyping. It takes a list of data matrices as the input and outputs the subtype for each patient
 #' @param dataList List of data matrices. In each matrix, rows represent samples and columns represent genes/features.
 #' @param k Number of clusters, leave as default for auto detection.
 #' @param max.k Maximum number of cluster
@@ -38,14 +38,13 @@ SCFA <- function(dataList, k = NULL, max.k = 5, ncores = 10L, seed = NULL) {
         if (max(data) <= 1)
             data <- 10^data - 1
 
-        if (ncol(data) > 10000) {
-            col_mean_data = colMeans(data)
-            idx <- order(col_mean_data, decreasing = TRUE)[seq(10000)]
+        if (ncol(data) > 20000) {
+            col_mean_data <- colMeans(data)
+            idx <- order(col_mean_data, decreasing = TRUE)[seq(20000)]
             data <- data[, idx]
         }
 
         tmp <- SCFA.basic(data, k = k, max.k = max.k, ncores = ncores, gen.fil = gen.fil, seed = seed)
-
 
         all_data <- cbind(all_data, tmp$filter)
         all_clus <- c(all_clus, tmp$all.res)
@@ -75,7 +74,6 @@ gene.filtering <- function(data, original_dim, batch_size, ncores.ind, seed)
     {
         if (!is.null(seed))
         {
-            set.seed((seed+i))
             torch_manual_seed((seed+i))
         }
         if (nrow(data) > 2000) {
@@ -85,26 +83,30 @@ gene.filtering <- function(data, original_dim, batch_size, ncores.ind, seed)
         } else {
             data.tmp <- data
         }
-        torch::torch_set_num_threads(1)
-        torch::torch_set_num_interop_threads(1)
+        torch::torch_set_num_threads(min(ncores.ind, 4))
         RhpcBLASctl::blas_set_num_threads(1)
 
         data_train <- SCFA_dataset(data.tmp)
         dl <- data_train %>% dataloader(batch_size = batch_size, shuffle = TRUE)
-        model <- SCFA_AE(original_dim, 10)
-        optimizer <- optim_adamw(model$parameters, lr = 5e-5, weight_decay = 1e-2, eps = 1e-7)
-        for (epoch in 1:5) {
+        model <- SCFA_AE(original_dim, 25)
+        optimizer <- optim_adamw(model$parameters, lr = 1e-3, weight_decay = 1e-6, eps = 1e-7)
+        for (epoch in seq(5)) {
             optimizer$zero_grad()
-            for (b in enumerate(dl)) {
+            coro::loop(for (b in dl) {
                 output <- model(b[[1]])
                 loss <- torch::nnf_mse_loss(output, b[[1]])
                 loss$backward()
+                if(check_grad_nan(model$parameters))
+                {
+                    optimizer$zero_grad()
+                    next()
+                }
                 optimizer$step()
                 optimizer$zero_grad()
                 with_no_grad({
                     model$fc1$weight$copy_(model$fc1$weight$data()$clamp(min=0))
                 })
-            }
+            })
         }
         W <- t(as.matrix(model$fc1$weight))
         Wsd <- rowSds(W)
@@ -122,7 +124,7 @@ gene.filtering <- function(data, original_dim, batch_size, ncores.ind, seed)
 generating.latent <- function(da, ncores, classification, seed)
 {
     if(classification) re <- rep(10:15, 3) else re <- rep(5:10, 3)
-    param <- SnowParam(workers = min(10, ncores), RNGseed = seed)
+    param <- SnowParam(workers = min(length(re), ncores), RNGseed = seed)
     FUN <- function(counter, da, re)
     {
         RhpcBLASctl::blas_set_num_threads(1)
@@ -155,7 +157,7 @@ clustering.all <- function(latent, ncores, k, max.k, seed)
 }
 
 SCFA.basic <- function(data = data, k = NULL, max.k = 5, ncores = 10L,
-                       gen.fil = TRUE, classification = FALSE, seed = NULL) {
+                        gen.fil = TRUE, classification = FALSE, seed = NULL) {
     non.zero.prop <- colSums2(data != 0)/nrow(data)
     data <- data[, non.zero.prop > 0]
 
@@ -188,7 +190,7 @@ SCFA.basic <- function(data = data, k = NULL, max.k = 5, ncores = 10L,
         final <- clustercom2(result)
         g.en <- latent[[which.max(vapply(result$all, function(x) adjustedRandIndex(x, final), numeric(1)))]]
         list(cluster = final, latent = g.en, all.latent = latent,
-             filter = or.da, keep = colnames(or.da), all.res = result$all)
+            filter = or.da, keep = colnames(or.da), all.res = result$all)
     }
     else
     {
