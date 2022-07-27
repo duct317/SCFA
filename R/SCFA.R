@@ -35,12 +35,9 @@ SCFA <- function(dataList, k = NULL, max.k = 5, ncores = 10L, seed = NULL) {
     all_latent <- NULL
     counter <- 1
     for (data in dataList) {
-        if (max(data) <= 1)
-            data <- 10^data - 1
-
-        if (ncol(data) > 20000) {
-            col_mean_data <- colMeans(data)
-            idx <- order(col_mean_data, decreasing = TRUE)[seq(20000)]
+        if (ncol(data) > 10e3) {
+            col_mean_data <- matrixStats::colSds(data)
+            idx <- order(col_mean_data, decreasing = TRUE)[seq(10e3)]
             data <- data[, idx]
         }
 
@@ -83,13 +80,13 @@ gene.filtering <- function(data, original_dim, batch_size, ncores.ind, seed)
         } else {
             data.tmp <- data
         }
-        torch::torch_set_num_threads(min(ncores.ind, 4))
+        torch::torch_set_num_threads(min(ncores.ind, 2))
         RhpcBLASctl::blas_set_num_threads(1)
 
         data_train <- SCFA_dataset(data.tmp)
         dl <- data_train %>% dataloader(batch_size = batch_size, shuffle = TRUE)
         model <- SCFA_AE(original_dim, 25)
-        optimizer <- optim_adamw(model$parameters, lr = 1e-3, weight_decay = 1e-6, eps = 1e-7)
+        optimizer <- optim_adamw(model$parameters, lr = 1e-3, weight_decay = 1e-4, eps = 1e-7)
         for (epoch in seq(5)) {
             optimizer$zero_grad()
             coro::loop(for (b in dl) {
@@ -130,7 +127,7 @@ generating.latent <- function(da, ncores, classification, seed)
         RhpcBLASctl::blas_set_num_threads(1)
         i <- re[counter]
         tmp <- da * matrix(rnorm(da, sd = 0.02, mean = 1), ncol = ncol(da))
-        fit <- fa(t(tmp), nfactors = i, rotate = "varimax", scores = "tenBerge")
+        fit <- fa(cor(t(tmp)), nfactors = i, rotate = "varimax", scores = "tenBerge")
         fa <- fit$loadings[, seq(i)]
         fa
     }
@@ -244,11 +241,9 @@ SCFA.class <- function(dataListTrain, trainLabel, dataListTest, ncores = 10L, se
     all_latent <- NULL
     counter <- 1
     for (data in dataList) {
-        if (max(data) <= 1)
-            data <- 10^data - 1
-        if (ncol(data) > 50000) {
-            col_mean_data <- colMeans(data)
-            idx <- order(col_mean_data, decreasing = TRUE)[seq(50000)]
+        if (ncol(data) > 10e3) {
+            col_mean_data <- matrixStats::colSds(data)
+            idx <- order(col_mean_data, decreasing = TRUE)[seq(10e3)]
             data <- data[, idx]
         }
         tmp <- SCFA.basic(data, ncores = ncores, classification = TRUE, seed = 1)
