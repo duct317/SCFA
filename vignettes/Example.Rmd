@@ -56,7 +56,7 @@ survival <- GBM$survival
 ```
 
 ## Subtyping
-We can use the main funtion `SCFA` to generate subtypes from multi-omics data. The input of this function is a list of matrices from different data types. Each matrix has rows as samples and cells as features. The output of this function is subtype assignment for each patient. We can perform survival analysis to determine the significance in survival differences between discovered subtypes.
+We can use the main funtion `SCFA` to generate subtypes from multi-omics data. The input of this function is a list of matrices from different data types. Each matrix has rows as samples and columns as features. The output of this function is subtype assignment for each patient. We can perform survival analysis to determine the significance in survival differences between discovered subtypes.
 ```{r, eval=TRUE}
 # Generating subtyping result
 set.seed(1)

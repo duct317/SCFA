@@ -2,7 +2,7 @@
 #' @importFrom matrixStats colSums2 rowSds rowMeans2 rowMaxs rowMins colSds
 #' @importFrom stats predict rnorm quantile
 #' @importFrom psych fa
-#' @importFrom RhpcBLASctl blas_set_num_threads
+#' @importFrom RhpcBLASctl blas_set_num_threads omp_set_num_threads
 #' @importFrom survival coxph
 #' @title SCFA
 #' @description The main function to perform subtyping. It takes a list of data matrices as the input and outputs the subtype for each patient
@@ -29,14 +29,18 @@
 #' print(coxP)
 #' @export
 SCFA <- function(dataList, k = NULL, max.k = 5, ncores = 10L, seed = NULL) {
+    RhpcBLASctl::blas_set_num_threads(1)
+    RhpcBLASctl::omp_set_num_threads(1)
     gen.fil <- TRUE
     all_data <- NULL
     all_clus <- NULL
     all_latent <- NULL
     counter <- 1
     for (data in dataList) {
+        if (max(data) <= 1)
+            data <- 10^data - 1
         if (ncol(data) > 10e3) {
-            col_mean_data <- matrixStats::colSds(data)
+            col_mean_data <- colMeans(data)
             idx <- order(col_mean_data, decreasing = TRUE)[seq(10e3)]
             data <- data[, idx]
         }
@@ -82,6 +86,7 @@ gene.filtering <- function(data, original_dim, batch_size, ncores.ind, seed)
         }
         torch::torch_set_num_threads(min(ncores.ind, 2))
         RhpcBLASctl::blas_set_num_threads(1)
+        RhpcBLASctl::omp_set_num_threads(1)
 
         data_train <- SCFA_dataset(data.tmp)
         dl <- data_train %>% dataloader(batch_size = batch_size, shuffle = TRUE)
@@ -101,7 +106,7 @@ gene.filtering <- function(data, original_dim, batch_size, ncores.ind, seed)
                 optimizer$step()
                 optimizer$zero_grad()
                 with_no_grad({
-                    model$fc1$weight$copy_(model$fc1$weight$data()$clamp(min=0))
+                    model$fc1$weight$clamp_min_(0)
                 })
             })
         }
@@ -125,6 +130,7 @@ generating.latent <- function(da, ncores, classification, seed)
     FUN <- function(counter, da, re)
     {
         RhpcBLASctl::blas_set_num_threads(1)
+        RhpcBLASctl::omp_set_num_threads(1)
         i <- re[counter]
         tmp <- da * matrix(rnorm(da, sd = 0.02, mean = 1), ncol = ncol(da))
         fit <- fa(cor(t(tmp)), nfactors = i, rotate = "varimax", scores = "tenBerge")
@@ -144,6 +150,7 @@ clustering.all <- function(latent, ncores, k, max.k, seed)
     FUN <- function(x, k, max.k)
     {
         RhpcBLASctl::blas_set_num_threads(1)
+        RhpcBLASctl::omp_set_num_threads(1)
         cluster <- clus(x, k = k, max.k = max.k)
         cluster
     }
@@ -231,6 +238,8 @@ SCFA.basic <- function(data = data, k = NULL, max.k = 5, ncores = 10L,
 #' print(c.index)
 #' @export
 SCFA.class <- function(dataListTrain, trainLabel, dataListTest, ncores = 10L, seed = NULL) {
+    RhpcBLASctl::blas_set_num_threads(1)
+    RhpcBLASctl::omp_set_num_threads(1)
     alpha <- 0.5
     nfold <- 5
     dataList <- list()
@@ -241,8 +250,10 @@ SCFA.class <- function(dataListTrain, trainLabel, dataListTest, ncores = 10L, se
     all_latent <- NULL
     counter <- 1
     for (data in dataList) {
+        if (max(data) <= 1)
+            data <- 10^data - 1
         if (ncol(data) > 10e3) {
-            col_mean_data <- matrixStats::colSds(data)
+            col_mean_data <- colMeans(data)
             idx <- order(col_mean_data, decreasing = TRUE)[seq(10e3)]
             data <- data[, idx]
         }

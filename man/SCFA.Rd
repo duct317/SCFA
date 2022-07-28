@@ -21,7 +21,7 @@ SCFA(dataList, k = NULL, max.k = 5, ncores = 10L, seed = NULL)
 A numeric vector containing cluster assignment for each sample.
 }
 \description{
-The main function to perform subtyping. It takes a list of data matrices as the input and outputs the subtype for each patient.
+The main function to perform subtyping. It takes a list of data matrices as the input and outputs the subtype for each patient
 }
 \examples{
 #Load example data (GBM dataset)
