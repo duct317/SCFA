@@ -4,6 +4,7 @@
 #' @importFrom psych fa
 #' @importFrom RhpcBLASctl blas_set_num_threads omp_set_num_threads
 #' @importFrom survival coxph
+#' @importFrom coro loop
 #' @title SCFA
 #' @description The main function to perform subtyping. It takes a list of data matrices as the input and outputs the subtype for each patient
 #' @param dataList List of data matrices. In each matrix, rows represent samples and columns represent genes/features.
