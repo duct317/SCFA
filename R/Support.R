@@ -108,11 +108,11 @@ adjustedRandIndex <- function(x, y) {
 
 #' @import cluster
 #' @importFrom utils combn
-#' @import clusterCrit
 #' @importFrom stats as.dist cutree hclust median
 #' @import Matrix
+
 wMetaC <- function(nC, hmethod, enN.cluster, minN.cluster, maxN.cluster, sil.thre,
-                    height.Ntimes) {
+                   height.Ntimes) {
     # This is to obtain the weight matrix for each cluster solution for following
     # meta-clustering
     N <- nrow(nC)  #number of points
@@ -144,7 +144,7 @@ wMetaC <- function(nC, hmethod, enN.cluster, minN.cluster, maxN.cluster, sil.thr
         sil.thre <- 0
     }
     hres <- get_opt_hclust(S, hmethod, N.cluster = enN.cluster, minN.cluster, maxN.cluster,
-                            sil.thre, height.Ntimes)  #solely using the silhouette index as the criteria
+                           sil.thre, height.Ntimes)  #solely using the silhouette index as the criteria
     tf <- hres$f
     v <- hres$v
 
@@ -179,6 +179,7 @@ wMetaC <- function(nC, hmethod, enN.cluster, minN.cluster, maxN.cluster, sil.thr
     y0 <- t(y0)#transpose
     x0 <- matrix(0, nrow = N, ncol = N.cluster)
     tw <- 0.5
+    # print(uC)
     for (i in seq(N)) {
         xind <- which(finalC[i] == uC)
         x0[i, xind] <- 1  #the correct clustering result
@@ -244,8 +245,32 @@ getnewk <- function(k, R, x, N) {
     return(newk1)
 }
 
+#' @importFrom stats cov
+calinhara <- function(x,clustering,cn=max(clustering)){
+    x <- as.matrix(x)
+    p <- ncol(x)
+    n <- nrow(x)
+    cln <- rep(0,cn)
+    W <- matrix(0,p,p)
+    for (i in 1:cn)
+        cln[i] <- sum(clustering==i)
+    #  print(cln)
+    for (i in 1:cn) {
+        clx <- x[clustering==i,]
+        cclx <- cov(as.matrix(clx))
+        #    print(cclx)
+        if (cln[i] < 2)
+            cclx <- 0
+        W <- W + ((cln[i] - 1) * cclx)
+    }
+    S <- (n - 1) * cov(x)
+    B <- S - W
+    out <- (n-cn)*sum(diag(B))/((cn-1)*sum(diag(W)))
+    out
+}
+
 get_opt_hclust <- function(mat, hmethod, N.cluster, minN.cluster, maxN.cluster, sil.thre,
-                            height.Ntimes) {
+                           height.Ntimes) {
     # if no agglomeration method for hierarchical clustering is provided
     if (missing(hmethod) || is.null(hmethod)) {
         hmethod <- "ward.D"  #the default hierarchical clustering agglomeration method is 'ward.D'
@@ -295,8 +320,9 @@ get_opt_hclust <- function(mat, hmethod, N.cluster, minN.cluster, maxN.cluster, 
         f <- v  #the optimal clustering results
         sil <- silhouette(v, d)
         msil <- median(sil[, 3])
-        ch0 <- intCriteria(data.matrix(mat), as.integer(v), "Calinski_Harabasz")
-        CHind <- unlist(ch0, use.names = FALSE)  #convert a list to a vector/value
+        # ch0 <- intCriteria(data.matrix(mat), as.integer(v), "Calinski_Harabasz")
+        # CHind <- unlist(ch0, use.names = FALSE)  #convert a list to a vector/value
+        CHind <- calinhara(data.matrix(mat), as.integer(v))
         optN.cluster <- N.cluster
     }
     hres <- list()
