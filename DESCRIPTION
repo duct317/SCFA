@@ -18,7 +18,7 @@ Imports: matrixStats, BiocParallel, torch (>= 0.3.0), coro,
   igraph, Matrix, cluster, psych, glmnet, RhpcBLASctl, stats, utils, methods, survival
 RoxygenNote: 7.1.1
 biocViews: Survival, Clustering, Classification
-Suggests: knitr, rmarkdown
+Suggests: knitr, rmarkdown, BiocStyle 
 VignetteBuilder: knitr
 URL: https://github.com/duct317/SCFA
 BugReports: https://github.com/duct317/SCFA/issues
